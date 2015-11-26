@@ -1,0 +1,32 @@
+# per-computer settings
+local.el
+
+# compiled files
+*.elc
+
+# temp files
+*~
+\#*#
+
+# files different modes make
+/elpa/
+/eshell/
+/url/
+/snippets/
+/var/
+.calc.el
+.abbrev_defs
+.projectile
+.mc-lists.el
+.org-id-locations
+recentf
+bookmarks
+history
+ido.last
+projectile*
+server
+smex-items
+tramp
+
+# a place to put stuff I don't want checked in
+/tmp/

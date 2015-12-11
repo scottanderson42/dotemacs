@@ -837,8 +837,12 @@ uses backslashes instead of forward slashes."
 (global-set-key (kbd "<f7>") (quote save-and-compile))
 
 ;; Flycheck for automatic code checking.
+;;
+;; This hangs on Windows with jshint and the flycheck maintainer's not
+;; interested in debugging Windows issues.
 
-(use-package flycheck)
+(use-package flycheck
+  :if (eq system-type 'darwin))
 
 
 ;;; multiple-cursors and iedit -------------------------------------------------
@@ -1280,31 +1284,38 @@ _l_: line   _s_: symbol  _p_: prev error"
 ;; http://stackoverflow.com/questions/20863386/idomenu-not-working-in-javascript-mode
 ;; https://github.com/redguardtoo/emacs.d/blob/master/lisp/init-javascript.el
 
-;; Provide our own imenu parser that picks out Javascript structures we use.
+;; The default Javascript imenu parser doesn't work with Backbone style
+;; structures, so we'll make a custom one.
+;;
 ;; Set the menu (first item) to nil so the result is a flat menu.
-
-;; js-mode has a sophisticated database of semantic items that I hate to use,
-;; but it completely fails in a basic node file.
 
 (setq javascript-common-imenu-regex-list
       '(
-        (nil "\.\$on( *'\\([^']+\\)" 1) ; on('event')
         (nil "function[ \t*]*\\([^ ]+\\) *(" 1) ; function name()
         (nil " \\([^ ]+\\)\\s-*[=:]\\s-*function[ \t*]*(" 1) ; name: function() and name = function()
-        (nil "app\.post(\\([^,]+\\) *," 1) ; app.post('xyz') (koa)
         ))
 
-(defun mk/js-imenu-make-index ()
+(defun personal/js-imenu-make-index ()
   (save-excursion
     (imenu--generic-function javascript-common-imenu-regex-list)))
 
 (defun personal-js-mode-hook ()
   (turn-on-auto-fill)
-  (flycheck-mode t)
-  (flyspell-prog-mode)
-  (setq-local imenu-create-index-function 'mk/js-imenu-make-index))
+  (when (eq system-type 'darwin)
+    (flycheck-mode t))
+  (setq-local imenu-create-index-function 'personal/js-imenu-make-index))
 
 (add-hook 'js-mode-hook 'personal-js-mode-hook)
+
+;; I prefer js-mode and flycheck-mode with jshint, but it hangs on Windows now.
+;; Using js2-mode as a minor mode just for linting.  (js2-mode author: Thanks!
+;; That was very generous of you to add an option like that.)
+
+(use-package js2-mode
+  :if (eq system-type 'windows-nt)
+  :ensure t
+  :config
+  (add-hook 'js-mode-hook 'js2-minor-mode))
 
 
 ;;; SQL ------------------------------------------------------------------------

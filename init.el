@@ -28,9 +28,9 @@
         scroll-step 1)
 
   ;; (set-frame-font "Source Code Pro-20") ; https://github.com/adobe/Source-Code-Pro
-  (set-frame-font "Inconsolata-24") ; http://levien.com/type/myfonts/inconsolata.html
+  ;; (set-frame-font "Inconsolata-24") ; http://levien.com/type/myfonts/inconsolata.html
   ;; (set-frame-font "Inconsolata-18") ; http://levien.com/type/myfonts/inconsolata.html
-  ;; (set-frame-font "Inconsolata-20") ; http://levien.com/type/myfonts/inconsolata.html
+  (set-frame-font "Inconsolata-20") ; http://levien.com/type/myfonts/inconsolata.html
   ;; (set-frame-font "Hack-20") ; https://github.com/chrissimpkins/Hack#about
   )
 
@@ -408,7 +408,7 @@ Works in Microsoft Windows, Mac OS X, Linux."
 ;;
 ;; From dired, open Finder to the current file.  No key binding since it isn't
 ;; used often.
-(use-package reveal-in-finder
+(use-package reveal-in-osx-finder
   :ensure t
   :if (eq system-type 'darwin))
 

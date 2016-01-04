@@ -27,17 +27,20 @@
         mouse-wheel-progressive-speed nil
         scroll-step 1)
 
-  ;; (set-frame-font "Source Code Pro-20") ; https://github.com/adobe/Source-Code-Pro
-  ;; (set-frame-font "Inconsolata-24") ; http://levien.com/type/myfonts/inconsolata.html
-  ;; (set-frame-font "Inconsolata-18") ; http://levien.com/type/myfonts/inconsolata.html
-  (set-frame-font "Inconsolata-20") ; http://levien.com/type/myfonts/inconsolata.html
-  ;; (set-frame-font "Hack-20") ; https://github.com/chrissimpkins/Hack#about
+  (if (find-font (font-spec :name "Inconsolata-20"))
+      (set-frame-font "Inconsolata-20") ; http://levien.com/type/myfonts/inconsolata.html
+      ;; (set-frame-font "Source Code Pro-20") ; https://github.com/adobe/Source-Code-Pro
+      ;; (set-frame-font "Inconsolata-24") ; http://levien.com/type/myfonts/inconsolata.html
+      ;; (set-frame-font "Inconsolata-18") ; http://levien.com/type/myfonts/inconsolata.html
+    ;; (set-frame-font "Hack-20") ; https://github.com/chrissimpkins/Hack#about
+    )
   )
 
 (when (eq system-type 'windows-nt)
-  (set-frame-font "Inconsolata-14")
-  ;; (set-frame-font "Consolas-14")
-  )
+  (if (find-font (font-spec :name "Inconsolata-14"))
+      (set-frame-font "Inconsolata-14")
+    ;; (set-frame-font "Consolas-14")
+    ))
 
 ;; A good idea in general, but particularly helpful with package-list-packages
 ;; for MELPA stable which apparently has a package with a Unicode name.

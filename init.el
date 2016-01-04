@@ -1292,6 +1292,9 @@ _l_: line   _s_: symbol  _p_: prev error"
 ;;
 ;; Set the menu (first item) to nil so the result is a flat menu.
 
+;; Update: flycheck and jshint has been missing a lot of obvious problems, so
+;; I'm going to switch to js2-mode on Mac also.
+
 (setq javascript-common-imenu-regex-list
       '(
         (nil "function[ \t*]*\\([^ ]+\\) *(" 1) ; function name()
@@ -1304,18 +1307,11 @@ _l_: line   _s_: symbol  _p_: prev error"
 
 (defun personal-js-mode-hook ()
   (turn-on-auto-fill)
-  (when (eq system-type 'darwin)
-    (flycheck-mode t))
   (setq-local imenu-create-index-function 'personal/js-imenu-make-index))
 
 (add-hook 'js-mode-hook 'personal-js-mode-hook)
 
-;; I prefer js-mode and flycheck-mode with jshint, but it hangs on Windows now.
-;; Using js2-mode as a minor mode just for linting.  (js2-mode author: Thanks!
-;; That was very generous of you to add an option like that.)
-
 (use-package js2-mode
-  :if (eq system-type 'windows-nt)
   :ensure t
   :config
   (add-hook 'js-mode-hook 'js2-minor-mode))

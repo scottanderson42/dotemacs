@@ -12,7 +12,6 @@ local.el
 /elpa/
 /eshell/
 /url/
-/snippets/
 /var/
 .calc.el
 .abbrev_defs

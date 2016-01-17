@@ -175,6 +175,17 @@
 (put 'narrow-to-page   'disabled nil)
 
 
+(defun save-all()
+  "Save all buffers without prompting"
+  (interactive) (save-some-buffers t))
+(global-set-key (kbd "C-x s") 'save-all)
+;; Normally C-x s prompts for each buffer, which is safe but I don't think I've
+;; ever not saved.  In projects that monitor directories and rebuild I often
+;; don't save individual files and save all at once to keep the rebuild from
+;; happening over and over.  (If it was fast enough I wouldn't care...)  Since
+;; I'm using this a lot, it is more convenient to have the key not prompt.
+
+
 ;;; Editing Tweaks -------------------------------------------------------------
 
 ;; Default to text-mode intead of fundamental-mode and 4-space tabs.  Turn on
@@ -199,7 +210,7 @@
 ;; type the ending one or move right to pass it, I'm not sure this is really
 ;; helping.  I do like closing Javascript braces though.  This might need
 ;; tweaking.
-(electric-pair-mode t)
+;; (electric-pair-mode t)
 
 (use-package paren
   ;; Highlight matching parens.
@@ -534,50 +545,62 @@ Don't mess with special buffers unless prefix is provided."
 
 ;;; Editing --------------------------------------------------------------------
 
-;; Set "M-[" to align current variables.  Also provides some other handy
-;; functions such as align-cols and align-regexp.
 
 (use-package align
+  ;; Set "M-[" to align current variables.  Also provides some other handy
+  ;; functions such as align-cols and align-regexp.
   :bind (("M-[" . align)))
 
 (use-package align2)
 
-;; Keep pressing "M-2" to expand the region.
 
 (use-package expand-region
+  ;; Keep pressing "M-2" to expand the region.
   :ensure t
   :bind (("M-2" . er/expand-region)))
 
-;; By default "M-z" is zap-to-char (with an "a") and is incredibly handy.  This
-;; package replaces that with *selecting* up to the character instead of
-;; deleting.  The old behavior now requires one more key, but you have more
-;; options.  It's worth using, but it doesn't always do what I expect so I might
-;; need to write a simpler one.
 
 (use-package zop-to-char
+  ;; By default "M-z" is zap-to-char (with an "a") and is incredibly handy.
+  ;; This package replaces that with *selecting* up to the character instead of
+  ;; deleting.  The old behavior now requires one more key, but you have more
+  ;; options.  It's worth using, but it doesn't always do what I expect so I
+  ;; might need to write a simpler one.
   :ensure t
   :bind ("M-z" . zop-to-char))
 
-;; Have "C-c d" duplicate the current line.
+
+(use-package whole-line-or-region
+  ;; This package makes cut and copy take the whole line if there is no
+  ;; selection.  Even better, if a line is copied, it is pasted back in as a
+  ;; line above the current one instead of being inserted exactly where the
+  ;; cursor is, possibly breaking a line.
+  :ensure t
+  :config (whole-line-or-region-mode 1))
+
 
 (defun dup-line ()
   "Duplicate the current line and move down to the new line."
+
+  ;; This was my goto for duplicating the current line, but now that I've
+  ;; installed whole-line-or-region I might not need it.
+
   (interactive nil)
   (let ((str (concat
               (buffer-substring (point) (save-excursion (end-of-line) (point)))
               "\n"
               (buffer-substring (save-excursion (beginning-of-line) (point)) (point)))))
     (insert str)))
-(global-set-key (kbd "C-S-<return>") 'dup-line)
-(global-set-key (kbd "C-c d") 'dup-line) ;; older
+(global-set-key (kbd "M-S-<return>") 'dup-line)
+;; This binding uses the same prefix as moving lines up and down, which are
+;; operations I often do together.  It is also more comfortable to use.
 
-
-;; drag-stuff allows you to use M-up/dn to "drag" text around.  Works with a
-;; selection too.  You can also use M-left/right with selected text.  (If text
-;; is not selected, left and right appear to try to move the current word but
-;; does something weird with cursor placement.)
 
 (use-package drag-stuff
+  ;; drag-stuff allows you to use M-up/dn to "drag" text around.  Works with a
+  ;; selection too.  You can also use M-left/right with selected text.  (If text
+  ;; is not selected, left and right appear to try to move the current word but
+  ;; does something weird with cursor placement.)
   :ensure t
   :diminish drag-stuff-mode
   :config
@@ -626,6 +649,31 @@ Don't mess with special buffers unless prefix is provided."
 
     (add-hook 'drag-stuff-before-drag-hook #'modi/drag-stuff--adj-pt-pre-drag)
     (add-hook 'drag-stuff-after-drag-hook  #'modi/drag-stuff--rst-pt-post-drag)))
+
+
+;; Shift the selected region right if distance is postive, left if negative.  I
+;; only need this because drag-stuff doesn't always work.
+
+(defun shift-region (distance)
+  (let ((mark (mark)))
+    (save-excursion
+      (indent-rigidly (region-beginning) (region-end) distance)
+      (push-mark mark t t)
+      ;; Tell the command loop not to deactivate the mark
+      ;; for transient mark mode
+      (setq deactivate-mark nil))))
+
+(defun shift-right ()
+  (interactive)
+  (shift-region 1))
+
+(defun shift-left ()
+  (interactive)
+  (shift-region -1))
+
+(global-set-key [M-S-right] 'shift-right)
+(global-set-key [M-S-left] 'shift-left)
+
 
 
 (defun fill-buffer ()
@@ -1121,8 +1169,10 @@ _l_: line   _s_: symbol  _p_: prev error"
   :config
   (progn
     (add-to-list 'magit-no-confirm 'stage-all-changes)
-    (setq magit-push-always-verify nil)
-    (setq magit-last-seen-setup-instructions "2.1.0"
+    (setq magit-push-always-verify nil
+          magit-last-seen-setup-instructions "2.1.0"
+          magit-commit-show-diff nil
+          magit-revert-buffers 1
           magit-completing-read-function #'magit-ido-completing-read)
 
     (defun personal-magit-setup-hook()
@@ -1155,6 +1205,18 @@ _l_: line   _s_: symbol  _p_: prev error"
 ;; performance.
 (setq vc-handled-backends nil)
 
+
+;;; yasnippets -----------------------------------------------------------------
+
+;; There are a ton of built-in snippets when downloading from MELPA, which makes
+;; it take forever to load.  I don't use any of them anyway, so I'll set the
+;; directory to only by mine first.
+(setq yas-snippet-dirs '("~/.emacs.d/snippets"))
+
+(use-package yasnippet
+  :ensure t
+  :config (yas-global-mode 1)
+  )
 
 ;;; Miscellaneous Modes --------------------------------------------------------
 
@@ -1314,7 +1376,10 @@ _l_: line   _s_: symbol  _p_: prev error"
 (use-package js2-mode
   :ensure t
   :config
-  (add-hook 'js-mode-hook 'js2-minor-mode))
+  (progn
+    (setq-default js2-global-externs
+          '("define" "require" "app" "$" "_" "moment" "Backbone" "sessionStorage" "HTTP_ROOT" "localStorage" "Handlebars"))
+  (add-hook 'js-mode-hook 'js2-minor-mode)))
 
 
 ;;; SQL ------------------------------------------------------------------------

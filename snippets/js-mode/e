@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: event prevent
+# key:  e
+# --
+e.preventDefault();
+e.stopPropagation();
+
+$0

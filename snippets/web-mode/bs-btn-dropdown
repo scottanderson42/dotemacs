@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: Bootstrap button dropdown
+# key:  btn-dropdown
+# --
+<div class="btn-group">
+  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    $1 <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">$0
+    <li class="dropdown-header">Dropdown header</li>
+    <li><a href="#">Action</a></li>
+    <li role="separator" class="divider"></li>
+    <li><a href="#">Separated link</a></li>
+  </ul>
+</div>

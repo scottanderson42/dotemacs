@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: log-variable
+# key:  lv
+# --
+console.log('$1:', $1);

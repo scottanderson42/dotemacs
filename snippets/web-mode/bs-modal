@@ -1,0 +1,22 @@
+# -*- mode: snippet -*-
+# name: Bootstrap modal
+# key:  modal
+# --
+<div class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">${1:Title}</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          $0<label></label>
+          <input>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">${2:Save}</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

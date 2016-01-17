@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: do not check in
+# key: dn
+# --
+# DO NOT CHECK IN
+$0

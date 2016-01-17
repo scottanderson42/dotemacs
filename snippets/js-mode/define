@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: define
+# key:  d
+# --
+define('$1', function() {
+  // $2
+
+  'use strict';
+
+  $0
+});

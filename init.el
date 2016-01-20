@@ -576,6 +576,7 @@ Don't mess with special buffers unless prefix is provided."
   ;; line above the current one instead of being inserted exactly where the
   ;; cursor is, possibly breaking a line.
   :ensure t
+  :diminish whole-line-or-region-mode
   :config (whole-line-or-region-mode 1))
 
 
@@ -749,6 +750,12 @@ This is useful when followed by an immediate kill."
 (define-key isearch-mode-map [(control return)] 'isearch-exit-other-end)
 
 
+;; "M-s _" starts an isearch for the current symbols, but the binding feels very
+;; different from "C-s".  Instead, use the prefix to initiate.  (This is still a
+;; bit awkward to press.
+
+(global-set-key (kbd "C-.") 'isearch-forward-symbol-at-point)
+
 ;;; Scratch Buffer -------------------------------------------------------------
 
 ;; The scratch buffer should be easy to get to.  Press F8 to go to it, creating
@@ -872,6 +879,16 @@ uses backslashes instead of forward slashes."
     (add-to-list 'projectile-other-file-alist '("py" "html" "js"))
     (projectile-global-mode)))
 
+;; I'm looking for some shorter shortcuts for the common projectile functions.
+;; I'm using Hyper which I've set to Option on a Mac keyboard.
+(use-package key-chord
+  :load-path "misc/"
+  :config
+  (progn
+    (key-chord-define-global "FF" 'projectile-recentf)
+    (key-chord-define-global "DD" 'projectile-find-directory)
+    (key-chord-define-global "BB" 'projectile-switch-to-buffer)
+    (key-chord-mode 1)))
 
 ;;; Compilation ----------------------------------------------------------------
 
@@ -1215,8 +1232,8 @@ _l_: line   _s_: symbol  _p_: prev error"
 
 (use-package yasnippet
   :ensure t
-  :config (yas-global-mode 1)
-  )
+  :diminish yas-minor-mode
+  :config (yas-global-mode 1))
 
 ;;; Miscellaneous Modes --------------------------------------------------------
 

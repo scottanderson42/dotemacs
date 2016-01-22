@@ -556,7 +556,15 @@ Don't mess with special buffers unless prefix is provided."
 
 (use-package expand-region
   ;; Keep pressing "M-2" to expand the region.
-  :ensure t
+
+  ;; This project has not added a release tag for a while.  Once use-package
+  ;; gets released (ironic, yes) with a default pin, we can load this one
+  ;; package from MELPA unstable.  For now, issue #130 is so annoying that I'll
+  ;; just check it out here.
+
+  ;; :ensure t
+  :load-path "misc/expand-region"
+
   :bind (("M-2" . er/expand-region)))
 
 
@@ -877,18 +885,13 @@ uses backslashes instead of forward slashes."
     (add-to-list 'projectile-other-file-alist '("html" "js" "py"))
     (add-to-list 'projectile-other-file-alist '("js" "html" "py"))
     (add-to-list 'projectile-other-file-alist '("py" "html" "js"))
+
+    ;; I'm looking for some shorter shortcuts for the common projectile functions.
+    (global-set-key (kbd "M-O") 'projectile-find-file)
+    (global-set-key (kbd "M-B") 'projectile-switch-to-buffer)
+
     (projectile-global-mode)))
 
-;; I'm looking for some shorter shortcuts for the common projectile functions.
-;; I'm using Hyper which I've set to Option on a Mac keyboard.
-(use-package key-chord
-  :load-path "misc/"
-  :config
-  (progn
-    (key-chord-define-global "FF" 'projectile-recentf)
-    (key-chord-define-global "DD" 'projectile-find-directory)
-    (key-chord-define-global "BB" 'projectile-switch-to-buffer)
-    (key-chord-mode 1)))
 
 ;;; Compilation ----------------------------------------------------------------
 

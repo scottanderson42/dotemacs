@@ -1055,21 +1055,17 @@ uses backslashes instead of forward slashes."
 ;; the current buffer so you can jump to them using the same fuzzy matching.
 ;; This is just a modified version of imenu.
 
-(defun ido-goto-symbol (&optional symbol-list)
-  "Refresh imenu and jump to a place in the buffer using Ido."
+
+(defun ido-goto-symbol (&optional symbol-list parent)
   (interactive)
-  (unless (featurep 'imenu)
-    (require 'imenu nil t))
+
+  ;; If no symbol-list, we've just been called interactively.  Call ourselves
+  ;; with the list from imenu--make-index-alist.  That call will poplute
+  ;; symbol-names which we then pass to ido.
+
   (cond
    ((not symbol-list)
-    (let ((ido-mode ido-mode)
-          (ido-enable-flex-matching
-           (if (boundp 'ido-enable-flex-matching)
-               ido-enable-flex-matching t))
-          name-and-pos symbol-names position)
-      (unless ido-mode
-        (ido-mode 1)
-        (setq ido-enable-flex-matching t))
+    (let (name-and-pos symbol-names position)
       (while (progn
                (imenu--cleanup)
                (setq imenu--index-alist nil)
@@ -1077,6 +1073,7 @@ uses backslashes instead of forward slashes."
                (setq selected-symbol
                      (ido-completing-read "goto: " symbol-names))
                (string= (car imenu--rescan-item) selected-symbol)))
+      ;; A symbol has been selected - go to it.
       (unless (and (boundp 'mark-active) mark-active)
         (push-mark nil t nil))
       (setq position (cdr (assoc selected-symbol name-and-pos)))
@@ -1085,12 +1082,23 @@ uses backslashes instead of forward slashes."
         (goto-char (overlay-start position)))
        (t
         (goto-char position)))))
+
+   ;; To ge here, we must have a symbol-list, so this is a recursive call whose
+   ;; job is simply to take the symbols, put them into `symbol-names`, and
+   ;; return.
+   ;;
+   ;; `symbol-list` is actually a tree, so if we find sub-symbols (e.g. a class
+   ;; with methods), we'll call ourselves again with the sub-symbols as
+   ;; `symbol-list`.
+
    ((listp symbol-list)
     (dolist (symbol symbol-list)
       (let (name position)
         (cond
          ((and (listp symbol) (imenu--subalist-p symbol))
-          (ido-goto-symbol symbol))
+          (progn
+            (message "symbol: %S" (car symbol))
+            (ido-goto-symbol symbol (car symbol))))
          ((listp symbol)
           (setq name (car symbol))
           (setq position (cdr symbol)))
@@ -1098,13 +1106,26 @@ uses backslashes instead of forward slashes."
           (setq name symbol)
           (setq position
                 (get-text-property 1 'org-imenu-marker symbol))))
+        (if (null position)
+            (message "no position: %s" name))
         (unless (or (null position) (null name)
                     (string= (car imenu--rescan-item) name))
+
+          ;; Format the name appropriately.  Note that "*class definition*" is
+          ;; something that Python does which Python mode does.  I need to see
+          ;; how to make this more generic.
+          (setq name
+                (cond
+                 ((and (atom parent) (string= name "*class definition*"))
+                  parent)
+                 ((atom parent)
+                  (concat parent " " name))
+                 (t
+                  name)))
+
           (add-to-list 'symbol-names name)
           (add-to-list 'name-and-pos (cons name position))))))))
 
-(global-set-key (kbd "M-g s") 'ido-goto-symbol)
-(global-set-key (kbd "M-g M-s") 'ido-goto-symbol)
 
 ;; Fuzzy matching for M-x
 
@@ -1115,27 +1136,12 @@ uses backslashes instead of forward slashes."
 
 ;;; Fast Navigation ------------------------------------------------------------
 
-;; Quickly jump to any visible character.  I'm still getting used to this but I
-;; think it could be good.
+
 
 (use-package avy
-  :ensure t
-  :bind (("C-c SPC" . avy-goto-word-1)))
-
-;; ;; Replacing normal C-s isearch with swiper for a while.
-;; (use-package swiper
-;;   :disable t
-;;   ;; Disabled for now - I often want to search for the word at point, but C-w
-;;   ;; (which you use for isearch) doesn't work.  There is probably a way, but I
-;;   ;; also don't like how swiper's results don't match ido.  (I realize that is
-;;   ;; the point of swiper, but I really just want isearch + ido.)
-;;   :ensure t
-;;   :bind("C-s" . swiper)
-;;   )
-;; ;; ivy is the completion engine behind swiper
-;; (setq ivy-display-style 'fancy)
-;;
-;; (global-set-key (kbd "C-s") 'swiper)
+  ;; Quickly jump to any visible character.  I'm still getting used to this but
+  ;; I think it could be good.
+  :ensure t)
 
 
 ;; Create a hydra for the various goto commands
@@ -1147,15 +1153,17 @@ _l_: line   _s_: symbol  _p_: prev error"
   ("l" goto-line)
   ("s" ido-goto-symbol)
   ("M-s" ido-goto-symbol)
-  ("c" avy-goto-char)
+  ("c" avy-goto-char-timer)
   ("w" avy-goto-word-1)
   ("." cua-set-mark)
   ("n" next-error)
   ("p" previous-error)
-  ;; For backwards compatability, have "M-g M-g" and "M-g g" do what they've
-  ;; always done.
+  ;;;; For backwards compatability, have "M-g M-g" and "M-g g" do what they've
+  ;;;; always done.
   ("g" goto-line)
-  ("M-g" goto-line))
+  ("M-g" goto-line)
+  )
+
 (global-set-key (kbd "M-g") 'hydra-goto/body)
 
 ;;; Kill Ring ------------------------------------------------------------------
@@ -1361,6 +1369,8 @@ _l_: line   _s_: symbol  _p_: prev error"
   (turn-on-auto-fill)
   (setq electric-indent-inhibit t)
   (abbrev-mode 1)
+  ;; Python mode appends "(class)" and "(def)" to everything which looks crappy.
+  (setq python-imenu-format-item-label-function (lambda(type name) name))
   (setenv "LANG" "en_US.UTF8"))
 
 

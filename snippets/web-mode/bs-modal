@@ -12,6 +12,7 @@
         <div class="form-group">
           $0<label></label>
           <input>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="submit" class="btn btn-primary">${2:Save}</button>

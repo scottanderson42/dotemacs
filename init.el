@@ -1201,6 +1201,11 @@ _l_: line   _s_: symbol  _p_: prev error"
           magit-last-seen-setup-instructions "2.1.0"
           magit-commit-show-diff nil
           magit-revert-buffers 1
+
+          ;; To speed things up, don't show the diff when asking to stage and
+          ;; commit all.  I would have already checked the diffs here.
+          magit-commit-ask-to-stage t
+
           magit-completing-read-function #'magit-ido-completing-read)
 
     (defun personal-magit-setup-hook()
@@ -1542,15 +1547,10 @@ _l_: line   _s_: symbol  _p_: prev error"
           '(lambda ()
              (progn
                (linum-mode -1)
-               (local-set-key (kbd "M-.") 'eshell-insert-last-word)
-               (eshell-smart-initialize))))
+               (local-set-key (kbd "M-.") 'eshell-insert-last-word))))
 
 
 (require 'eshell)
-(require 'em-smart)
-(setq eshell-where-to-jump 'begin)
-(setq eshell-review-quick-commands nil)
-(setq eshell-smart-space-goes-to-end t)
 
 ;; Move eshell's generated files into a subdirectory so we can add a single item
 ;; to .gitignore.

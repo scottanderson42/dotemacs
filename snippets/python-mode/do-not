@@ -3,4 +3,5 @@
 # key: dn
 # --
 # DO NOT CHECK IN
-$0
+if __debug__:
+    $0

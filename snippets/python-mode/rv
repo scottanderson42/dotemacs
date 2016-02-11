@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: REVIEW
-# key: rv
+# name: col
+# key: c
 # --
-# REVIEW: $0
+('$1', '$1', COL_NORMAL),

@@ -1271,6 +1271,7 @@ _l_: line   _s_: symbol  _p_: prev error"
 ;; prevent demoting heading also shifting text inside sections
 (setq org-adapt-indentation nil)
 
+(setq org-todo-keywords '("TODO (t)" "STARTED" "WAITING" "SOMEDAY" "DONE (d)"))
 
 ;;; Whitespace and Line Endings ------------------------------------------------
 

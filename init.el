@@ -47,6 +47,20 @@
 
 (prefer-coding-system 'utf-8)
 
+;;; Garbage Collection ----------------------------------------------------------
+
+;; http://bling.github.io/blog/2016/01/18/why-are-you-changing-gc-cons-threshold/
+;;
+;; For performance, increase the GC size, but not naively.
+
+(defun my-minibuffer-setup-hook ()
+  (setq gc-cons-threshold most-positive-fixnum))
+
+(defun my-minibuffer-exit-hook ()
+  (setq gc-cons-threshold 800000))
+
+(add-hook 'minibuffer-setup-hook #'my-minibuffer-setup-hook)
+(add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook)
 
 ;;; Custom File ----------------------------------------------------------------
 

@@ -1,7 +1,7 @@
 
 ;;; Notes ----------------------------------------------------------------------
 
-;; If something goes wrong, run emacs with "--debug-init" to get a stack trace.
+;; If something goes wrong, run Emacs with "--debug-init" to get a stack trace.
 ;; If you are on OS X, you can use:
 ;;
 ;;   $ open -n /Applications/Emacs.app --args --debug-init
@@ -12,6 +12,8 @@
 ;; Get keys, fonts, and colors setup early so if something goes wrong
 ;; troubleshooting won't be so frustrating.
 
+;;; Code:
+
 (when (eq system-type 'darwin)
   ;; On Mac make the Cmd key Meta.  First, it is much more comfortable to use
   ;; than Option and has the added benefit of being in the same place as Alt on
@@ -21,14 +23,18 @@
         mac-command-modifier 'meta
         mac-option-modifier 'hyper)
 
+  ;; Enable Mac window switching. Overrides tmm-menubar which I don't use.
+
+  (global-set-key (kbd "M-`") 'other-frame)
+
   ;; The mouse wheel is crazy fast by default.
   ;; http://krismolendyke.github.io/.emacs.d/#sec-7
   (setq mouse-wheel-scroll-amount '(0.01)
         mouse-wheel-progressive-speed nil
         scroll-step 1)
 
-  (if (find-font (font-spec :name "Inconsolata-20"))
-      (set-frame-font "Inconsolata-20") ; http://levien.com/type/myfonts/inconsolata.html
+  (if (find-font (font-spec :name "Inconsolata-18"))
+      (set-frame-font "Inconsolata-18") ; http://levien.com/type/myfonts/inconsolata.html
       ;; (set-frame-font "Source Code Pro-20") ; https://github.com/adobe/Source-Code-Pro
       ;; (set-frame-font "Inconsolata-24") ; http://levien.com/type/myfonts/inconsolata.html
       ;; (set-frame-font "Inconsolata-18") ; http://levien.com/type/myfonts/inconsolata.html
@@ -77,11 +83,21 @@
   (if (file-exists-p theme)
       (load-file theme)))
 
+(set-cursor-color"orchid")
+
+;;(add-to-list 'load-path "/Users/anderson/elisp/color-theme-6.6.0")
+;;(require 'color-theme)
+;;(setq load-path (cons "/Users/anderson/elisp/themes/emacs-color-theme-solarized" load-path))
+;;(setq custom-theme-load-path (cons "/Users/anderson/elisp/themes/emacs-color-theme-solarized" ()))
+
+;;(require 'color-theme-solarized)
+;;(color-theme-solarized-dark)
+
 
 ;;; Personal Information -------------------------------------------------------
 
-(setq user-full-name "Michael Kleehammer"
-      user-mail-address "michael@kleehammer.com")
+(setq user-full-name "Scott Anderson"
+      user-mail-address "scottanderson42@gmail.com")
 
 
 ;;; Package Sources ------------------------------------------------------------
@@ -102,7 +118,10 @@
 (setq package-archives
       (append package-archives
               '(("gnu" . "http://elpa.gnu.org/packages/")
-                ("melpa-stable" . "http://stable.melpa.org/packages/"))))
+                ("melpa-stable" . "http://stable.melpa.org/packages/")
+                ("melpa" . "http://melpa.milkbox.net/packages/")
+                ("marmalade" . "http://marmalade-repo.org/packages/")
+)))
 
 (package-initialize)
 (setq package-enable-at-startup nil)
@@ -129,8 +148,12 @@
   (tooltip-mode -1)
   (tool-bar-mode -1)
 
-  (setq frame-title-format "%b - emacs"
-        icon-title-format "%f - emacs"
+  (setq frame-title-format
+        '((:eval (if (buffer-file-name)
+                     (abbreviate-file-name (buffer-file-name))
+                   "%b"))))
+
+  (setq icon-title-format "%f - emacs"
         ns-pop-up-frames nil))
 
 ;; Remove the clock from the mode line since the OS has one and add columns.
@@ -144,10 +167,13 @@
 (setq line-number-display-limit nil
       line-number-display-limit-width 1000000)
 
-;; Default to no line wrapping but have "C-x l" to toggle.
+;; Default to line wrapping but have "C-x l" to toggle.
 
-(setq-default truncate-lines t)
-(global-set-key (kbd "C-x l") 'toggle-truncate-lines)
+(setq-default truncate-lines nil)
+;; (global-set-key (kbd "C-x l") 'toggle-truncate-lines)
+
+;; Make sure C-n can add lines at the end of the file
+(setq next-line-add-newlines t)
 
 
 ;;; System Tweaks --------------------------------------------------------------
@@ -162,11 +188,16 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 
 ;; Turn off backups and auto-save.
-(setq backup-inhibited t
-      auto-save-default nil
-      create-lockfiles nil
-      delete-old-versions t)
-(auto-save-mode nil)
+;;(setq backup-inhibited t
+;;      auto-save-default nil
+;;      create-lockfiles nil
+;;      delete-old-versions t)
+;;(auto-save-mode nil)
+(setq create-lockfiles nil)
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
 
 ;; Anyone working around me will appreciate it if emacs doesn't ding every time
 ;; I hit the wrong key...
@@ -178,7 +209,8 @@
 
 ;; If I remember correctly, this ensures that when if you page down, paging up
 ;; puts the cursor in the same place.
-(setq scroll-preserve-screen-position 'always)
+;; (setq scroll-preserve-screen-position 'always)
+(setq scroll-preserve-screen-position nil)
 
 ;; Enable some really handy functions.  These already have keys assigned and
 ;; will ask you for confirmation when you execute them unless you enable them.
@@ -217,6 +249,9 @@
 
 (setq-default fill-column 95)
 
+;; Turn this on everywhere, for craft.
+(global-subword-mode t)
+
 ;; Automatically move the mouse cursor out of the way of the emacs cursor.
 (mouse-avoidance-mode 'animate)
 
@@ -224,12 +259,24 @@
 ;; type the ending one or move right to pass it, I'm not sure this is really
 ;; helping.  I do like closing Javascript braces though.  This might need
 ;; tweaking.
-;; (electric-pair-mode t)
+(electric-pair-mode t)
 
 (use-package paren
   ;; Highlight matching parens.
   :config
   (show-paren-mode 1))
+
+;; Case inflection, like a bawss.
+
+(use-package string-inflection
+  :ensure t
+  :bind (("C-c i" . string-inflection-cycle)
+         ("C-c C" . string-inflection-camelcase)
+         ("C-c P" . string-inflection-lower-camelcase)
+         ("C-c S" . string-inflection-underscore)
+         ("C-c U" . string-inflection-upcase)
+         )
+)
 
 
 ;;; Global Key Bindings --------------------------------------------------------
@@ -272,7 +319,44 @@
 ;; Replacing is something else I do a lot so a quick key is needed.  (Once you
 ;; get used to buffer narrowing, search and replace becomes a lot more powerful.)
 
-(global-set-key (kbd "C-c r") 'replace-string)
+(global-set-key (kbd "M-r") 'replace-string)
+
+;; Compare windows.
+
+(global-set-key (kbd "C-c C-w") 'compare-windows)
+
+;; Semantic mode
+
+(global-set-key (kbd "C-x .") 'semantic-complete-jump)
+(global-set-key (kbd "C-x ,") 'semantic-ia-fast-jump)
+
+
+;; Common paired programming characters.
+
+;;(global-set-key (kbd "M-[") 'insert-pair)
+;;(global-set-key (kbd "M-{") 'insert-pair)
+;;(global-set-key (kbd "M-\"") 'insert-pair)
+;;(global-set-key (kbd "M-\'") 'insert-pair)
+
+(global-set-key (kbd "M-)") 'delete-pair)
+
+;; Complete tag finding
+
+(global-set-key (kbd "M-RET") 'hippie-expand) ;; used to be 'complete-tag'
+
+;; Commenting/uncommenting. I have no idea why this immensely useful function
+;; is not defaulted.
+
+(global-set-key (kbd "C-c k") 'comment-or-uncomment-region)
+
+;; Used for indenting code.
+
+;; M-S-right and M-S-left will shift left and right one space at a time.
+;; These will do python indentation shifting, so 4 chars
+(global-set-key [(control c) (>)] `python-indent-shift-right)
+(global-set-key [(control c) (<)] `python-indent-shift-left)
+
+(transient-mark-mode 0)
 
 ;; The cycle-spacing function does the job of multiple functions.  Replace
 ;; delete-horizontal-whitespace.  Particularly useful since Cmd-SPC is used by
@@ -296,6 +380,25 @@
 
 (global-set-key (kbd "<f6>") 'font-lock-fontify-buffer)
 
+
+;; wdired mode
+(global-set-key (kbd "C-c w d") 'wdired-change-to-wdired-mode)
+
+
+;; customized dired: will display directory recursively when called with an argument
+(defun op-i:dired (rec)
+  (interactive "P")
+  (let ((dir (car (find-file-read-args "Dired: " nil)))
+        (opts (if rec (read-string "options: " "-lhAR") "-lhA")))
+    (if (file-directory-p dir) (dired dir opts))))
+
+(define-key (current-global-map) (kbd "C-x C-d") 'op-i:dired)
+
+
+;;; Bookmarks and registers
+
+(set-register ?0 (cons 'file "/Users/anderson/src/ivory"))
+(set-register ?1 (cons 'file "/Users/anderson/src/ivory/web/static_src/coffee"))
 
 ;;; OS Integration -------------------------------------------------------------
 
@@ -459,6 +562,7 @@ Works in Microsoft Windows, Mac OS X, Linux."
      (add-to-list 'grep-find-ignored-directories "node_modules")
      (add-to-list 'grep-find-ignored-directories "build")))
 
+(global-set-key (kbd "C-M-g") 'rgrep)
 
 ;; wgrep - "writable grep results".  Let's you edit the grep results and then
 ;; write the changes back to the original files.  Not in MELPA stable so loading
@@ -486,7 +590,7 @@ Works in Microsoft Windows, Mac OS X, Linux."
   "Kill the current buffer, without confirmation."
   (interactive)
   (kill-buffer (current-buffer)))
-(global-set-key (kbd "C-x k") 'kill-current-buffer)
+;;(global-set-key (kbd "C-x k") 'kill-current-buffer)
 
 ;; Eliminate 'kill buffer' query for running processes (SQL windows, etc.).
 (setq kill-buffer-query-functions
@@ -563,7 +667,7 @@ Don't mess with special buffers unless prefix is provided."
 (use-package align
   ;; Set "M-[" to align current variables.  Also provides some other handy
   ;; functions such as align-cols and align-regexp.
-  :bind (("M-[" . align)))
+  :bind (("M-|" . align)))
 
 (use-package align2)
 
@@ -579,7 +683,7 @@ Don't mess with special buffers unless prefix is provided."
   ;; :ensure t
   :load-path "misc/expand-region"
 
-  :bind (("M-2" . er/expand-region)))
+  :bind (("M-+" . er/expand-region)))
 
 
 (use-package zop-to-char
@@ -589,7 +693,7 @@ Don't mess with special buffers unless prefix is provided."
   ;; options.  It's worth using, but it doesn't always do what I expect so I
   ;; might need to write a simpler one.
   :ensure t
-  :bind ("M-z" . zop-to-char))
+  :bind ("C-z" . zop-to-char))
 
 
 (use-package whole-line-or-region
@@ -929,6 +1033,32 @@ uses backslashes instead of forward slashes."
 (use-package flycheck
   :if (eq system-type 'darwin))
 
+ (cond
+  ((= 24 emacs-major-version)
+   (require 'flycheck)
+   (add-hook 'after-init-hook #'global-flycheck-mode)
+
+   (defun flycheck-python-set-executables ()
+     (let ((exec-path (python-shell-calculate-exec-path)))
+       (setq ;;flycheck-python-pylint-executable (executable-find "pylint")
+        flycheck-python-flake8-executable (executable-find "flake8")))
+     ;; Force Flycheck mode on
+     (flycheck-mode))
+
+;;   (defun flycheck-python-setup ()
+;;     (add-hook 'hack-local-variables-hook #'flyspell-python-set-executables
+;;          nil 'local))
+
+;;   (add-hook 'python-mode-hook #'flycheck-python-setup)
+   (add-hook 'python-mode-hook 'subword-mode)
+
+   (require 'flymake-coffee)
+   (add-hook 'coffee-mode-hook 'flymake-coffee-load)
+ ))
+
+(setq auto-mode-alist
+   (append '((".*\\.cjsx\\'" . coffee-mode))
+      auto-mode-alist))
 
 ;;; multiple-cursors and iedit -------------------------------------------------
 
@@ -947,7 +1077,14 @@ uses backslashes instead of forward slashes."
   :ensure t
 
   :bind
-  (("M-3" . mark-next-like-this-cycle-forward) ; next to er/expand-region which is M-2
+  (("M-=" . mark-next-like-this-cycle-forward) ; next to er/expand-region which
+                                        ; is M-2
+    ("C->" . mc/mark-next-like-this)
+    ("C-S->" . mc/mark-next-symbol-like-this)
+    ("C-," . mc/mark-previous-like-this)
+    ("C-c C-<" . mc/mark-all-like-this)
+    ("C-S-<mouse-1>" . mc/add-cursor-on-click)
+
    ("C-x m" . hydra-mc/body))
 
   :config
@@ -1148,6 +1285,31 @@ uses backslashes instead of forward slashes."
   :bind (("M-x" . smex)))
 
 
+;; Auto-complete
+
+(use-package fuzzy
+  :ensure t)
+
+(use-package elpy
+  :ensure t)
+
+(use-package auto-complete
+  :ensure t
+  :bind (("M-/" . ac-fuzzy-complete))
+  :config
+  (progn
+    (global-auto-complete-mode +1)
+    )
+)
+
+(use-package coffee-mode
+  :ensure t
+  :config
+  (progn
+    (auto-complete-mode +1)
+    )
+)
+
 ;;; Fast Navigation ------------------------------------------------------------
 
 
@@ -1187,6 +1349,11 @@ _l_: line   _s_: symbol  _p_: prev error"
 
 (use-package browse-kill-ring
   :ensure t
+  :bind (
+         ("C-c C-y" . browse-kill-ring)
+         ("C-M-y"   . browse-kill-ring)
+         ("C-c y"   . browse-kill-ring)
+         )
   :config
   (progn
     (browse-kill-ring-default-keybindings)
@@ -1200,6 +1367,13 @@ _l_: line   _s_: symbol  _p_: prev error"
                   browse-kill-ring-separator-face 'widget-documentation-face)))
 
 
+(use-package git-gutter
+  :ensure t
+  :config
+  (progn
+    (global-git-gutter-mode +1)
+    ))
+
 ;;; Magit ----------------------------------------------------------------------
 
 ;; Magit is a great interface to git.  I've set "M-F7" to show the current
@@ -1207,7 +1381,10 @@ _l_: line   _s_: symbol  _p_: prev error"
 
 (use-package magit
   :ensure t
-  :bind (("M-<f7>" . magit-status))
+  :bind (
+         ("C-c g" . magit-status)
+         ("C-c C-g" . magit-dispatch-popup)
+         )
   :config
   (progn
     (add-to-list 'magit-no-confirm 'stage-all-changes)
@@ -1231,7 +1408,10 @@ _l_: line   _s_: symbol  _p_: prev error"
     ;; Do not show tags in the "Show Refs" window.  It is way too slow on
     ;; Windows and isn't useful if you just want to manage your branches.  This
     ;; makes it more like Magit 1.x's branch manager.
-    (remove-hook 'magit-refs-sections-hook 'magit-insert-tags)))
+    (remove-hook 'magit-refs-sections-hook 'magit-insert-tags)
+    (global-magit-file-mode)
+    )
+  )
 
 ;; This is a fantastic package.  Turn it on and it creates a buffer for the
 ;; current file showing its previous state in git.  Press C-n and C-p to move
@@ -1244,9 +1424,9 @@ _l_: line   _s_: symbol  _p_: prev error"
 ;; I'm using Github a lot so having pull requests directly in the magit buffer
 ;; is handy.
 
-;; (use-package magit-gh-pulls
-;;   :config
-;;   (add-hook 'magit-mode-hook 'turn-on-magit-gh-pulls))
+(use-package magit-gh-pulls
+  :config
+  (add-hook 'magit-mode-hook 'turn-on-magit-gh-pulls))
 
 ;; We won't be needing emacs' built-in version control code so disable it for
 ;; performance.
@@ -1256,7 +1436,7 @@ _l_: line   _s_: symbol  _p_: prev error"
 ;;; yasnippets -----------------------------------------------------------------
 
 ;; There are a ton of built-in snippets when downloading from MELPA, which makes
-;; it take forever to load.  I don't use any of them anyway, so I'll set the
+;; it take forever to load.  I don't use any of  anyway, so I'll set the
 ;; directory to only by mine first.
 (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
 
@@ -1353,6 +1533,9 @@ _l_: line   _s_: symbol  _p_: prev error"
 (use-package web-mode
   :ensure t
   :mode "\\.html$"
+  :mode "\\.jinja$"
+  :mode "\\.jsx$"
+;;  :mode "\\.cjsx$"
   :config
   (progn
     (setq
@@ -1366,7 +1549,17 @@ _l_: line   _s_: symbol  _p_: prev error"
     (define-key web-mode-map (kbd "C-M-p") 'web-mode-tag-previous)
     (define-key web-mode-map (kbd "C-M-u") 'web-mode-element-parent)
     (define-key web-mode-map (kbd "C-M-a") 'web-mode-element-previous)
-    (define-key web-mode-map (kbd "C-M-e") 'web-mode-element-end)))
+    (define-key web-mode-map (kbd "C-M-e") 'web-mode-element-end)
+    (add-hook 'web-mode-hook 'subword-mode)
+    (electric-pair-mode nil)
+    (add-to-list 'auto-mode-alist '("\\.jsx$" . web-mode))
+;;    (add-to-list 'auto-mode-alist '("\\cjsx$" . web-mode))
+    )
+  )
+
+(setq web-mode-content-types-alist
+  '(("jsx"  . ".*\\.js[x]?\\'")))
+;;  '(("jsx"  . ".*\\.[c]js[x]?\\'")))
 
 ;; I'm using Python from the /misc directory so I can have the latest version.
 ;; I had to turn off the hideous electric-indent though.
@@ -1386,8 +1579,8 @@ _l_: line   _s_: symbol  _p_: prev error"
           )))
 
 (defun my-python-hook()
-  (turn-on-auto-fill)
-  (setq electric-indent-inhibit t)
+  ;;(turn-on-auto-fill)
+  ;;(setq electric-indent-inhibit t)
   (abbrev-mode 1)
   ;; Python mode appends "(class)" and "(def)" to everything which looks crappy.
   (setq python-imenu-format-item-label-function (lambda(type name) name))
@@ -1431,6 +1624,7 @@ _l_: line   _s_: symbol  _p_: prev error"
           '("define" "require" "app" "$" "_" "moment" "Backbone" "sessionStorage" "HTTP_ROOT" "localStorage" "Handlebars"))
   (add-hook 'js-mode-hook 'js2-minor-mode)))
 
+(setq-default js-indent-level 2)
 
 ;;; SQL ------------------------------------------------------------------------
 
@@ -1591,17 +1785,7 @@ _l_: line   _s_: symbol  _p_: prev error"
 
 ;;; C / C++ --------------------------------------------------------------------
 
-;; Add the new Visual Studio 2005 / MSBuild format which adds the column to the
-;; older Visual Studio format.
-;;
-;; Listener.cs(19,16): error CS1002: ; expected
 (require 'compile)
-(setq compilation-error-regexp-alist
-      (nconc
-       '(
-         ("^\\([A-Za-z_-0-9.]+\\)(\\([0-9]+\\),\\([0-9]+\\)): \\(error\\|warning\\)" 1 2 3)
-         )
-       compilation-error-regexp-alist))
 
 (autoload 'c++-mode "cc-mode" "C++ Editing Mode" t)
 (autoload 'c-mode   "cc-mode" "C Editing Mode" t)
@@ -1683,9 +1867,6 @@ _l_: line   _s_: symbol  _p_: prev error"
   :load-path "misc/"
   :config
   (progn
-    ;; Rename to coffee-time. :)
-    (defalias 'coffee-time 'tea-time)
-
     ;; Use a mac utility named terminal-notifier to get OS X native notifications.
     (when (eq system-type 'darwin)
       (add-hook 'tea-time-notification-hook
@@ -1693,7 +1874,7 @@ _l_: line   _s_: symbol  _p_: prev error"
                   (start-process "tea-timer-notification" nil
                                  "terminal-notifier"
                                  "-title" "'Hello, Sailor!'"
-                                 "-message" "'Coffee is ready!'"
+                                 "-message" "'Tea is ready!'"
                                  "-appIcon"
                                  "/Applications/Emacs.app/Contents/Resources/Emacs.icns"))))))
 

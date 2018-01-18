@@ -1,0 +1,12 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: future
+# key: sfuture
+# binding: direct-keybinding
+# --
+# Python
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)

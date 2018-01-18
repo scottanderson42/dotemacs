@@ -13,6 +13,8 @@
  '(align-sq-string-modes (quote (perl-mode cperl-mode python-mode sql-mode)))
  '(archive-zip-extract (quote ("unzip" "-p" "-q")))
  '(blink-cursor-mode nil)
+ '(coffee-tab-width 2)
+ '(column-number-mode t)
  '(comint-scroll-show-maximum-output nil)
  '(comment-auto-fill-only-comments t)
  '(compilation-auto-jump-to-first-error nil)
@@ -22,6 +24,7 @@
  '(completion-ignored-extensions
    (quote
     (".svn/" "CVS/" ".o" "~" ".bin" ".bak" ".obj" ".map" ".a" ".ln" ".blg" ".bbl" ".elc" ".lof" ".glo" ".idx" ".lot" ".dvi" ".fmt" ".tfm" ".pdf" ".class" ".fas" ".lib" ".lo" ".la" ".toc" ".aux" ".cp" ".fn" ".ky" ".pg" ".tp" ".vr" ".cps" ".fns" ".kys" ".pgs" ".tps" ".vrs" ".frx" ".pyc" ".pyo")))
+ '(confirm-kill-emacs (quote y-or-n-p))
  '(css-indent-offset 2)
  '(cua-enable-cua-keys nil)
  '(custom-safe-themes
@@ -107,6 +110,9 @@
  '(rmail-mail-new-frame t)
  '(rng-nxml-auto-validate-flag nil)
  '(safe-local-variable-values (quote ((outline-minor-mode) (encoding . utf-8))))
+ '(safe-local-variable-values (quote ((py-indent-offset . 2))))
+ '(show-paren-mode t)
+ '(size-indication-mode t)
  '(speedbar-frame-parameters
    (quote
     ((background-color . "black")
@@ -121,6 +127,8 @@
  '(speedbar-use-images nil)
  '(sunshine-location "Argyle, TX")
  '(sunshine-show-icons t)
+ '(tool-bar-mode nil)
+ '(tramp-default-method "rsync")
  '(truncate-partial-width-windows nil)
  '(undo-tree-mode-lighter "")
  '(vc-dired-terse-display t)

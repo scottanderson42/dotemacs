@@ -1,0 +1,33 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: newmodel
+# key: newmodel
+# binding: direct-keybinding
+# --
+# Python
+from __future__ import unicode_literals
+
+# Django
+from django.db import models
+
+# 3rd Party
+from model_utils.managers import PassThroughManager
+
+# Local
+from core.models import BaseModel, MappingChoices
+
+
+class NEWMODELManager(PassThroughManager):
+    class NEWMODELQuerySet(models.query.QuerySet):
+        pass
+
+    def __init__(self):
+        super(NEWMODELManager, self).__init__(queryset_cls=self.NEWMODELQuerySet)
+
+
+class NEWMODEL(BaseModel):
+    class Meta:
+        app_label = 'APPCHANGEME'
+        # unique_together = ('field1', 'field2', 'field3')
+
+
+    objects = NEWMODELManager()

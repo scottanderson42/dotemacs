@@ -1,0 +1,34 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: test
+# key: test
+# binding: direct-keybinding
+# --
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
+# Python
+import json
+import mock
+import requests_mock
+
+# Django
+from django.conf import settings
+from django.test.utils import override_settings
+
+# Local Apps
+from core.tests.base import BaseTester
+
+
+class CHANGEMETester(BaseTester):
+    def setUp(self):
+        super(CHANGEMETester, self).setUp()
+
+    def tearDown(self):
+        super(CHANGEMETester, self).tearDown()
+
+    def testAThing(self):
+        self.assertTrue(False)

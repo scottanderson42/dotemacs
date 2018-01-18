@@ -1,0 +1,24 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: factory
+# key: factory
+# binding: direct-keybinding
+# --
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
+# 3rd Party
+import factory
+from factory import fuzzy
+
+# Local
+from ..models import CHANGEME
+
+
+class CHANGEMEFactory(factory.django.DjangoModelFactory):
+    class Meta(object):
+        # django_get_or_create = ("slug", )
+        model = CHANGEME

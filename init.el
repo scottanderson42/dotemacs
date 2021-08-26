@@ -79,9 +79,13 @@
 
 ;;; Theme ----------------------------------------------------------------------
 
+(setq custom--inhibit-theme-enable nil)
 (let ((theme "~/.emacs.d/dark-plain-theme.el"))
   (if (file-exists-p theme)
       (load-file theme)))
+
+;;(set-foreground-color "white")
+;;(set-background-color "black")
 
 (set-cursor-color"orchid")
 
@@ -119,8 +123,8 @@
       (append package-archives
               '(("gnu" . "http://elpa.gnu.org/packages/")
                 ("melpa-stable" . "http://stable.melpa.org/packages/")
-                ("melpa" . "http://melpa.milkbox.net/packages/")
-                ("marmalade" . "http://marmalade-repo.org/packages/")
+;;                ("melpa" . "http://melpa.milkbox.net/packages/")
+;;                ("marmalade" . "http://marmalade-repo.org/packages/")
 )))
 
 (package-initialize)
@@ -163,7 +167,9 @@
 (setq global-mode-string '("")
       column-number-mode t)
 
-(global-linum-mode 1)
+(global-display-line-numbers-mode t)
+(setq display-line-numbers "%4d \u2502 ")
+
 (setq line-number-display-limit nil
       line-number-display-limit-width 1000000)
 
@@ -552,6 +558,8 @@ Works in Microsoft Windows, Mac OS X, Linux."
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 (setq ediff-split-window-function 'split-window-horizontally)
 
+;;; smerge
+(setq smerge-command-prefix "v")
 
 ;;; grep -----------------------------------------------------------------------
 
@@ -1030,11 +1038,15 @@ uses backslashes instead of forward slashes."
 ;; This hangs on Windows with jshint and the flycheck maintainer's not
 ;; interested in debugging Windows issues.
 
+(use-package js2-mode)
+;;(use-package json-mode)
+(use-package exec-path-from-shell)
+
 (use-package flycheck
   :if (eq system-type 'darwin))
 
  (cond
-  ((= 24 emacs-major-version)
+  ((= 27 emacs-major-version)
    (require 'flycheck)
    (add-hook 'after-init-hook #'global-flycheck-mode)
 
@@ -1050,15 +1062,48 @@ uses backslashes instead of forward slashes."
 ;;          nil 'local))
 
 ;;   (add-hook 'python-mode-hook #'flycheck-python-setup)
+   (add-hook 'python-mode-hook 'flycheck-mode)
    (add-hook 'python-mode-hook 'subword-mode)
 
    (require 'flymake-coffee)
    (add-hook 'coffee-mode-hook 'flymake-coffee-load)
+
+  ;; disable jshint since we prefer eslint checking
+  (setq-default flycheck-disabled-checkers
+    (append flycheck-disabled-checkers
+      '(javascript-jshint)))
+
+  ;; use eslint with web-mode for jsx files
+  (flycheck-add-mode 'javascript-eslint 'web-mode)
+
+  ;; customize flycheck temp file prefix
+  (setq-default flycheck-temp-prefix ".flycheck")
+
+  ;; disable json-jsonlist checking for json files
+;;  (setq-default flycheck-disabled-checkers
+;;    (append flycheck-disabled-checkers
+;;      '(json-jsonlist)))
+
+  (when (memq window-system '(mac ns))
+    (exec-path-from-shell-initialize))
  ))
 
 (setq auto-mode-alist
    (append '((".*\\.cjsx\\'" . coffee-mode))
       auto-mode-alist))
+
+;; use local eslint from node_modules before global
+;; http://emacs.stackexchange.com/questions/21205/flycheck-with-file-relative-eslint-executable
+(defun my/use-eslint-from-node-modules ()
+  (let* ((root (locate-dominating-file
+                (or (buffer-file-name) default-directory)
+                "node_modules"))
+         (eslint (and root
+                      (expand-file-name "node_modules/eslint/bin/eslint.js"
+                                        root))))
+    (when (and eslint (file-executable-p eslint))
+      (setq-local flycheck-javascript-eslint-executable eslint))))
+(add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
 
 ;;; multiple-cursors and iedit -------------------------------------------------
 
@@ -1164,6 +1209,7 @@ uses backslashes instead of forward slashes."
 
 (require 'ido)
 (ido-mode 1)
+(ido-everywhere 1)
 
 ;; virtual-buffer causes ido-find-file (C-x C-f) to include recently used files
 ;; even if they are closed.
@@ -1188,10 +1234,10 @@ uses backslashes instead of forward slashes."
 
 ;; Use ido everywhere possible.
 
-(use-package ido-ubiquitous
+(use-package ido-completing-read+
   :ensure t
   :config
-  (ido-everywhere))
+  (ido-ubiquitous-mode 1))
 
 ;; The default ido display is a comma separated, horizontal list.  Show the items
 ;; vertically which is much easier to read.
@@ -1392,7 +1438,8 @@ _l_: line   _s_: symbol  _p_: prev error"
           magit-last-seen-setup-instructions "2.1.0"
           magit-commit-show-diff nil
           magit-revert-buffers 1
-
+          magit-refresh-status-buffer nil
+;;          magit-refresh-verbose 1
           ;; To speed things up, don't show the diff when asking to stage and
           ;; commit all.  I would have already checked the diffs here.
           magit-commit-ask-to-stage t
@@ -1401,7 +1448,8 @@ _l_: line   _s_: symbol  _p_: prev error"
 
     (defun personal-magit-setup-hook()
       (git-commit-turn-on-auto-fill)
-      (git-commit-turn-on-flyspell))
+      ;; (git-commit-turn-on-flyspell)
+      )
 
     (add-hook 'magit-commit-setup-hook 'personal-magit-setup-hook)
 
@@ -1534,7 +1582,6 @@ _l_: line   _s_: symbol  _p_: prev error"
   :ensure t
   :mode "\\.html$"
   :mode "\\.jinja$"
-  :mode "\\.jsx$"
 ;;  :mode "\\.cjsx$"
   :config
   (progn
@@ -1551,18 +1598,26 @@ _l_: line   _s_: symbol  _p_: prev error"
     (define-key web-mode-map (kbd "C-M-a") 'web-mode-element-previous)
     (define-key web-mode-map (kbd "C-M-e") 'web-mode-element-end)
     (add-hook 'web-mode-hook 'subword-mode)
-    (electric-pair-mode nil)
-    (add-to-list 'auto-mode-alist '("\\.jsx$" . web-mode))
-;;    (add-to-list 'auto-mode-alist '("\\cjsx$" . web-mode))
     )
   )
 
-(setq web-mode-content-types-alist
-  '(("jsx"  . ".*\\.js[x]?\\'")))
-;;  '(("jsx"  . ".*\\.[c]js[x]?\\'")))
+;; (use-package rjsx-mode
+;;   :ensure t
+;;   :mode "\\.js$"
+;;   :mode "\\.jsx$"
+;;   :config
+;;   (progn
+;;     (add-hook 'rjsx-mode-hook 'subword-mode)
+;;     (add-to-list 'auto-mode-alist '("\\.jsx$" . rjsx-mode))
+;;     (add-to-list 'auto-mode-alist '("\\.js$" . rjsx-mode))
+;;     )
+;;   )
 
-;; I'm using Python from the /misc directory so I can have the latest version.
-;; I had to turn off the hideous electric-indent though.
+(add-to-list 'auto-mode-alist '("\\.jsx$" . js2-jsx-mode))
+(add-to-list 'auto-mode-alist '("\\.js$" . js2-jsx-mode))
+
+;; Teh Pythonz
+
 
 (use-package python
   :mode ("\\.py\\'" . python-mode)
@@ -1615,9 +1670,12 @@ _l_: line   _s_: symbol  _p_: prev error"
   (setq-local imenu-create-index-function 'personal/js-imenu-make-index))
 
 (add-hook 'js-mode-hook 'personal-js-mode-hook)
+(add-hook 'js-mode-hook 'flycheck-mode)
 
 (use-package js2-mode
   :ensure t
+  :mode "\\.jsx$"
+  :mode "\\.js$"
   :config
   (progn
     (setq-default js2-global-externs
@@ -1755,7 +1813,7 @@ _l_: line   _s_: symbol  _p_: prev error"
 (add-hook 'eshell-mode-hook
           '(lambda ()
              (progn
-               (linum-mode -1)
+               (display-line-numbers-mode -1)
                (local-set-key (kbd "M-.") 'eshell-insert-last-word))))
 
 
